@@ -1,5 +1,6 @@
-import logging
 import json
+import logging
+
 from meshtastic_prometheus_exporter.metrics import *
 from meshtastic_prometheus_exporter.util import get_decoded_node_metadata_from_redis
 
@@ -32,9 +33,7 @@ def on_device_metrics_telemetry(packet, attributes):
 
 def on_meshtastic_telemetry_app(packet, source_long_name, source_short_name):
     telemetry = packet["decoded"]["telemetry"]
-    logger.debug(
-        f"Received MeshPacket {packet['id']} with Telemetry `{json.dumps(telemetry, default=repr)}`"
-    )
+    logger.debug(f"Received MeshPacket {packet['id']} with Telemetry `{json.dumps(telemetry, default=repr)}`")
     source = packet["decoded"].get("source", packet["from"])
     telemetry_attributes = {
         "source": source or "unknown",
