@@ -130,7 +130,7 @@ def on_meshtastic_mesh_packet(user_id, packet):
         try:
             payload = data.payload
             portnum = portnums_pb2.PortNum.Name(data.portnum)
-            packet["decoded"] = {"portnum": portnum, "payload": payload, "source": data.source, "dest": data.dest}
+            decoded = packet["decoded"] = MessageToDict(data) | {"portnum": portnum, "payload": payload}
 
         except Exception:
             logger.warning(f"Decryption failed for packet {_id} from {_from}")
@@ -140,6 +140,8 @@ def on_meshtastic_mesh_packet(user_id, packet):
 
     source = decoded.get("source")
     dest = decoded.get("dest")
+    request_id = decoded.get("requestId")
+    want_response = decoded.get("wantResponse")
 
     if not source:
         source = _from
@@ -208,10 +210,13 @@ def on_meshtastic_mesh_packet(user_id, packet):
         "dest_id": dest_id,
         "dest_long_name": dest_long_name,
         "dest_short_name": dest_short_name,
+        "request_id": request_id,
+        "want_response": want_response,
         "channel": packet.get("channel"),
         "type": portnum,
         "want_ack": packet.get("wantAck", False),
         "via_mqtt": packet.get("viaMqtt", False),
+        "rx_snr": rx_snr,
     }
 
     attributes = {k: v for k, v in attributes.items() if v is not None}

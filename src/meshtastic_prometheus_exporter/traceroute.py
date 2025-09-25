@@ -13,9 +13,8 @@ def on_meshtastic_traceroute_app(r, packet, attributes):
 
     logger.debug(f"Received MeshPacket {packet['id']} with Traceroute `{json.dumps(traceroute, default=repr)}`")
 
-    source = packet["decoded"].get("source", packet["from"])
-
-    response = bool(packet["decoded"].get("requestId"))
+    source = attributes["source"]
+    response = bool(attributes.get("request_id"))
 
     snrTowards = list(map(lambda s: float(s) / 4, traceroute.get("snrTowards", [])))
     snrBack = list(map(lambda s: float(s) / 4, traceroute.get("snrBack", [])))
@@ -28,6 +27,7 @@ def on_meshtastic_traceroute_app(r, packet, attributes):
 
         if packet["to"] == attributes["user"]:
             routeBack = routeBack + [attributes["user"]]
+            snrBack = snrBack + [attributes["rx_snr"]]
 
         routeTowards = [packet["to"]] + routeTowards + [packet["from"]]
 
@@ -36,6 +36,7 @@ def on_meshtastic_traceroute_app(r, packet, attributes):
 
         if packet["from"] == attributes["user"]:
             routeTowards = routeTowards + [attributes["user"]]
+            snrTowards = snrTowards + [attributes["rx_snr"]]
 
     logger.debug(
         f"Traceroute response={response} routeTowards={routeTowards} routeBack={routeBack} snrTowards={snrTowards} snrBack={snrBack}"
